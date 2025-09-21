@@ -17,7 +17,8 @@ def add_watermark(img_path, text, font_size, color, position, out_dir):
         font = ImageFont.truetype("arial.ttf", font_size)
     except:
         font = ImageFont.load_default()
-    text_w, text_h = draw.textsize(text, font=font)
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_w, text_h = bbox[2] - bbox[0], bbox[3] - bbox[1]
     w, h = image.size
 
     if position == 'left_top':
@@ -32,7 +33,11 @@ def add_watermark(img_path, text, font_size, color, position, out_dir):
     draw.text(pos, text, fill=color, font=font)
     base_name = os.path.basename(img_path)
     out_path = os.path.join(out_dir, base_name)
-    image.save(out_path)
+    exif_bytes = image.info.get("exif")
+    if exif_bytes:
+        image.save(out_path, exif=exif_bytes)
+    else:
+        image.save(out_path)
     print(f"水印图片已保存为: {out_path}")
 
 def main():
